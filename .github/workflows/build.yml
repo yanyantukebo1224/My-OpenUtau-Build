@@ -21,21 +21,8 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore -p:TargetFramework=net9.0-ios OpenUtauMobile.sln
 
-      # 修正ポイント：Nullable（Null許容）チェックを完全に無効化し、エラーを強制スルーさせます
       - name: Build IPA
-        run: |
-          dotnet publish OpenUtauMobile/OpenUtauMobile.csproj \
-          -f net9.0-ios \
-          -c Debug \
-          -p:ArchiveOnBuild=true \
-          -p:RuntimeIdentifier=ios-arm64 \
-          -p:TargetFrameworks=net9.0-ios \
-          -p:CodesignKey="-" \
-          -p:CodesignProvision="-" \
-          -p:Nullable=disable \
-          -p:CheckForOverflowUnderflow=false \
-          -p:TreatWarningsAsErrors=false \
-          -p:NoWarn=CS8600,CS8601,CS8602,CS8603,CS8604,CS8618,CS8625,CS0108
+        run: dotnet publish OpenUtauMobile/OpenUtauMobile.csproj -f net9.0-ios -c Debug -p:ArchiveOnBuild=true -p:RuntimeIdentifier=ios-arm64 -p:TargetFrameworks=net9.0-ios -p:CodesignKey="-" -p:CodesignProvision="-" -p:Nullable=disable -p:CheckForOverflowUnderflow=false -p:TreatWarningsAsErrors=false -p:NoWarn=CS8600,CS8601,CS8602,CS8603,CS8604,CS8618,CS8625,CS0108
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
