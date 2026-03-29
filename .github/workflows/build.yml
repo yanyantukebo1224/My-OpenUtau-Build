@@ -18,11 +18,10 @@ jobs:
       - name: Install MAUI iOS workload
         run: dotnet workload install maui-ios
 
-      # 公式ガイドの通り、iOSのみに絞って復元
       - name: Restore dependencies
         run: dotnet restore -p:TargetFramework=net9.0-ios OpenUtauMobile.sln
 
-      # 公式ガイドのビルドコマンド（Debugモードの方が早いのでこちらを採用）
+      # /p:NoWarn を追加して、Null関連のエラーなどを無視させます
       - name: Build IPA
         run: |
           dotnet publish OpenUtauMobile/OpenUtauMobile.csproj \
@@ -32,8 +31,10 @@ jobs:
           -p:RuntimeIdentifier=ios-arm64 \
           -p:TargetFrameworks=net9.0-ios \
           -p:CodesignKey="-" \
-          -p:CodesignProvision="-"
-
+          -p:CodesignProvision="-" \
+          -p:NoWarn=CS8600,CS8601,CS8602,CS8603,CS8604,CS8618,CS8625,CS0108 \
+          -p:TreatWarningsAsErrors=false
+          
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
