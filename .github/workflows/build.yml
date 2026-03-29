@@ -1,26 +1,41 @@
 name: Build OpenUtau iOS
 on: [workflow_dispatch]
+
 jobs:
   build:
     runs-on: macos-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-      - name: Install MAUI Workload
-        run: dotnet workload install ios
+
+      - name: Install MAUI iOS workload
+        run: dotnet workload install maui-ios
+
+      # 公式ガイドの通り、iOSのみに絞って復元
       - name: Restore dependencies
-        run: dotnet restore OpenUtauMobile.sln
-      - name: Build iOS App
+        run: dotnet restore -p:TargetFramework=net9.0-ios OpenUtauMobile.sln
+
+      # 公式ガイドのビルドコマンド（Debugモードの方が早いのでこちらを採用）
+      - name: Build IPA
         run: |
-          dotnet build OpenUtauMobile.sln -f net9.0-ios -c Release /p:BuildIpa=true /p:CodesignKey="-" /p:CodesignProvision="-"
+          dotnet publish OpenUtauMobile/OpenUtauMobile.csproj \
+          -f net9.0-ios \
+          -c Debug \
+          -p:ArchiveOnBuild=true \
+          -p:RuntimeIdentifier=ios-arm64 \
+          -p:TargetFrameworks=net9.0-ios \
+          -p:CodesignKey="-" \
+          -p:CodesignProvision="-"
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: OpenUtau-iOS-IPA
-          path: |
-            **/bin/Release/net9.0-ios/publish/*.ipa
-            **/bin/Release/net9.0-ios/*.app
+          path: OpenUtauMobile/bin/Debug/net9.0-ios/ios-arm64/publish/*.ipa
